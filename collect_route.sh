@@ -3,7 +3,7 @@
 RD=2022/09/28
 
 mkdir -p data_extracted/$RD
-touch data_extracted/$RD/paths.csv
+echo "" > data_extracted/$RD/paths.csv
 
 TOT=`ls data/$RD/*.path.txt | wc -l`
 CNT=0

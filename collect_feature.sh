@@ -3,9 +3,7 @@
 RD=2022/09/28
 
 mkdir -p data_extracted/$RD
-touch data_extracted/$RD/ports.csv
-touch data_extracted/$RD/features.csv
-touch data_extracted/$RD/22.csv
+echo "" > data_extracted/$RD/ports.csv
 
 function port_sum {
 	ADDR=`echo $1 | grep -Po "(?<=\/)(\d+\.\d+\.\d+\.\d+)(?=.nmap.txt)"`
@@ -28,7 +26,10 @@ function extract_info {
 			| sed 's:[\|_\(\)]::g' | awk '{$1=$1};1' | sed 's:\s:-:g' \
 			| tr -d '\0'`)
 		if [ -n "$KEYS" ]; then
-			echo $ADDR "${KEYS[@]}" >> data_extracted/$3/$2.csv
+			source ./featuredb.sh
+			init_db $2
+			insert_features "${KEYS[@]}"
+			echo $ADDR "${RET[@]}" >> data_extracted/$3/$2.csv
 		fi
 	fi
 }
@@ -55,6 +56,7 @@ echo "Extract port feature..."
 for PORT in "${PORTS[@]}"
 do
 	echo "Extracting feature of port $PORT..."
+	echo "" > data_extracted/$RD/$PORT.csv
 	port_open $PORT \
 		| xargs -P 32 --max-procs=32 -I '{}' \
 		bash -c "$(declare -f extract_info); extract_info {} $PORT $RD"
